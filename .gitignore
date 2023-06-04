@@ -1,7 +1,8 @@
 # Windows binaries
 *.exe
 *.dll
-
+*a.out
+*.so
 
 # QtCreator project user settings
 *.user
@@ -43,6 +44,7 @@ BOROUGH/*
 
 # Game saves
 saves/*
+SAVES/*
 
 # Screen shots
 *.tga

@@ -12,6 +12,7 @@
 #include "system_window.hpp"
 #include "common/tga.hpp"
 #include "common/files.hpp"
+#include "save_load.hpp"
 
 namespace PanzerChasm
 {
@@ -814,12 +815,15 @@ void SystemWindow::UpdateBrightness()
 
 bool SystemWindow::ScreenShot( const std::string& file ) const
 {
+	static uint8_t number = 0;
 	int result = -1;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	std::array<Uint32, 4> mask = { 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff };
 #else
 	std::array<Uint32, 4> mask = { 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000 };
 #endif
+	std::string dst_path = GetScreenshotFileNameForDir(CreateScreenshotsDir(file));
+
 	/* get screen surface from window */
 	SDL_Surface* screen = SDL_GetWindowSurface(window_);
 	int size = screen->w * screen->h;
@@ -865,13 +869,14 @@ bool SystemWindow::ScreenShot( const std::string& file ) const
 			for (auto & p : pixels)
 				p = { (uint8_t)(r[p[0]] >> 8), (uint8_t)(g[p[1]] >> 8), (uint8_t)(b[p[2]] >> 8), p[3] };
 
-			/* create target directory */
-			if(!create_directory(dir_name<std::string>(file)))
-				Log::Warning("Couldn't create screenshot directory: ", strerror(errno));
-
-			ChasmReverse::WriteTGA(screen->w, screen->h, &pixels.front().front(), nullptr, (remove_extension<std::string>(file) + ".tga").c_str());
-
+			ChasmReverse::WriteTGA(screen->w, screen->h, &pixels.front().front(), nullptr, dst_path.c_str());
+			if(!exists(dst_path))
+			{
+				Log::Warning("Couldn't write screenshot: ", dst_path, " - ", strerror(errno));
+				result = -1;
+			}
 			pixels.clear();
+
 		}
 
 	}

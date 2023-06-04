@@ -47,4 +47,8 @@ void GetSaveFileNameForSlot(
 
 void CreateSlotSavesDir();
 
+std::string GetScreenshotFileNameForDir(const std::string& dir);
+
+std::string CreateScreenshotsDir(const std::string& file);
+
 } // namespace PanzerChasm

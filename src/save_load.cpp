@@ -1,5 +1,6 @@
 #include <cctype>
 #include <cstring>
+#include <unistd.h>
 
 #include "common/files.hpp"
 using namespace ChasmReverse;
@@ -179,9 +180,49 @@ void GetSaveFileNameForSlot(
 	std::snprintf( out_file_name, out_file_name_max_length, SAVES_DIR"/save_%02d.pcs", slot_number );
 }
 
+std::string GetScreenshotFileNameForDir(const std::string& dir)
+{
+	static uint8_t slot_number = 0;
+	char* str = nullptr;
+
+	// TODO: use list directory to determine slot_number
+	ssize_t len = asprintf( &str, "%s/cshot_%02d.tga", dir.empty() ? SAVES_DIR : dir.c_str(), slot_number );
+	if(len < 14)
+	{
+		free(str);
+		Log::Warning( "Couldn't allocate memory for screenshot name: ", errno, " - ", strerror(errno));
+		return std::string(); 
+	}
+
+	slot_number = slot_number < 99 ? slot_number + 1 : 0;
+	std::string dst(str, len);
+
+	free(str);
+	return dst;
+}
+
+std::string CreateScreenshotsDir(const std::string& file)
+{
+	std::string dst_dir  = dir_name<std::string>(file);
+	std::string dst_file = base_name<std::string>(file);
+	std::string cwd = get_current_dir_name();
+
+	if(dst_dir.empty())
+		dst_dir = file[0] == '/' ? "/" : std::string(get_current_dir_name()) + "/" + SAVES_DIR;
+
+	if((!exists( dst_dir ) && !create_directories<std::string>( dst_dir )) || !real_path( dst_dir ))
+	{
+		Log::Warning("Couldn't create screenshot directory: ", dst_dir, " - ", strerror(errno));
+		dst_dir.clear();
+	}
+
+	return dst_dir;
+}
+
 void CreateSlotSavesDir()
 {
-	if(!create_directory( SAVES_DIR ))
+	std::string dir(SAVES_DIR);
+	if(!create_directories<std::string>( dir ))
 		Log::Warning("Couldn't create saves directory: ", strerror(errno));
 }
 

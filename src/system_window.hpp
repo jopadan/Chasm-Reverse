@@ -44,7 +44,7 @@ public:
 	void GetInput( SystemEvents& out_events );
 	void GetInputState( InputState& out_input_state );
 	void CaptureMouse( bool need_capture );
-	bool ScreenShot( const std::string& file = "screenshot" ) const;
+	bool ScreenShot( const std::string& file = "cshot_" ) const;
 
 private:
 	struct PixelColorsOrder
