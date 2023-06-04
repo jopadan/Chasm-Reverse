@@ -21,10 +21,8 @@ build-*
 *.cfg
 
 # Game data
-csm.bin
-CSM.BIN
-CSM.bin
-csm.BIN
+*.bin
+*.BIN
 CURSED/
 CURSED/*
 cursed/
