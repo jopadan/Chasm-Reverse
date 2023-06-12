@@ -1,3 +1,4 @@
+#include <chrono>
 #include "../assert.hpp"
 #include "../game_constants.hpp"
 #include "../i_drawers_factory.hpp"
@@ -138,8 +139,11 @@ void Client::Save( SaveLoadBuffer& buffer, SaveComment& out_save_comment )
 	for( const bool& wall_visibility : dynamic_walls_visibility )
 		save_stream.WriteBool( wall_visibility );
 
+
+	std::time_t timestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
 	// Write comment
-	std::snprintf( out_save_comment.data(), sizeof(SaveComment), "Level%2d  health %03d", current_map_data_->number, player_state_.health );
+	std::snprintf( out_save_comment.data(), sizeof(SaveComment), "%s", ctime( &timestamp ) + 4);
 }
 
 void Client::Load( const SaveLoadBuffer& buffer, unsigned int& buffer_pos )

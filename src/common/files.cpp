@@ -45,47 +45,15 @@ const char* ExtractExtension( const char* const file_path )
 
 } // namespace ChasmReverse
 
-bool exists( const std::string& file_path )
+std::filesystem::path remove_extension( const std::filesystem::path& path )
 {
-	struct stat sb;
-	if(stat(file_path.c_str(), &sb) == 0)
-		return true;
-	return false;
-}
 
-bool is_directory( const std::string& file_path )
-{
-	struct stat sb;
-	if((stat(file_path.c_str(), &sb) == 0) && ((sb.st_mode & S_IFMT) == S_IFDIR))
-		return true;
-	return false;	
-}
+	if( path == "." || path == ".." ) return path;
 
-bool is_regular_file( const std::string& file_path )
-{
-	struct stat sb;
-	if((stat(file_path.c_str(), &sb) == 0) && ((sb.st_mode & S_IFMT) == S_IFREG))
-		return true;
-	return false;	
-}
+	std::filesystem::path dst = path.stem();
 
-bool is_symlink( const std::string& file_path )
-{
-	struct stat sb;
-	if((stat(file_path.c_str(), &sb) == 0) && ((sb.st_mode & S_IFMT) == S_IFLNK))
-		return true;
-	return false;
-}
+	while(!dst.extension().empty()) dst = dst.stem();
 
-bool real_path( std::string& path )
-{
-	char* dst = realpath(path.c_str(), NULL);
-	if(dst == nullptr)
-		return false;
-
-	path = dst;
-	free(dst);
-
-	return true;
+	return path.parent_path() / dst;
 }
 

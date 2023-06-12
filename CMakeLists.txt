@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(Chasm-Reverse)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 if(MSVC)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /D _CRT_SECURE_NO_WARNINGS /MP")

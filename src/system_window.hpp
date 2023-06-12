@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <filesystem>
 #include <SDL.h>
 
 #include "fwd.hpp"
@@ -44,7 +45,7 @@ public:
 	void GetInput( SystemEvents& out_events );
 	void GetInputState( InputState& out_input_state );
 	void CaptureMouse( bool need_capture );
-	bool ScreenShot( const std::string& file = "cshot_" ) const;
+	bool ScreenShot( const std::filesystem::path& file = "cshot_" ) const;
 
 private:
 	struct PixelColorsOrder

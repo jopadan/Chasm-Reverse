@@ -9,7 +9,6 @@ using namespace ChasmReverse;
 
 #include "save_load.hpp"
 
-#define SAVES_DIR "saves"
 
 namespace PanzerChasm
 {
@@ -54,14 +53,14 @@ SaveHeader::HashType SaveHeader::CalculateHash( const unsigned char* data, unsig
 }
 
 bool SaveData(
-	const char* file_name,
+	const std::filesystem::path& file_name,
 	const SaveComment& save_comment,
 	const SaveLoadBuffer& data )
 {
-	FILE* f= std::fopen( file_name, "wb" );
+	FILE* f= std::fopen( file_name.native().c_str(), "wb" );
 	if( f == nullptr )
 	{
-		Log::Warning( "Can not write save \"", file_name, "\"" );
+		Log::Warning( "Can not write save \"", file_name.native(), "\"" );
 		return false;
 	}
 
@@ -81,13 +80,13 @@ bool SaveData(
 
 // Returns true, if all ok
 bool LoadData(
-	const char* file_name,
+	const std::filesystem::path& file_name,
 	SaveLoadBuffer& out_data )
 {
-	FILE* const f= std::fopen( file_name, "rb" );
+	FILE* const f= std::fopen( file_name.native().c_str(), "rb" );
 	if( f == nullptr )
 	{
-		Log::Warning( "Can not read save \"", file_name, "\"." );
+		Log::Warning( "Can not read save \"", file_name.native(), "\"." );
 		return false;
 	}
 
@@ -146,10 +145,10 @@ bool LoadData(
 }
 
 bool LoadSaveComment(
-	const char* file_name,
+	const std::filesystem::path& file_name,
 	SaveComment& out_save_comment )
 {
-	FILE* const f= std::fopen( file_name, "rb" );
+	FILE* const f= std::fopen( file_name.native().c_str(), "rb" );
 	if( f == nullptr )
 	{
 		return false;
@@ -172,57 +171,16 @@ bool LoadSaveComment(
 	return true;
 }
 
-void GetSaveFileNameForSlot(
-	const unsigned int slot_number,
-	char* const out_file_name,
-	const unsigned int out_file_name_max_length )
+std::filesystem::path GetSaveFileNameForSlot(const uint8_t slot_number)
 {
-	std::snprintf( out_file_name, out_file_name_max_length, SAVES_DIR"/save_%02d.pcs", slot_number );
-}
-
-std::string GetScreenshotFileNameForDir(const std::string& dir)
-{
-	static uint8_t slot_number = 0;
-	char* str = nullptr;
-
-	// TODO: use list directory to determine slot_number
-	ssize_t len = asprintf( &str, "%s/cshot_%02d.tga", dir.empty() ? SAVES_DIR : dir.c_str(), slot_number );
-	if(len < 14)
-	{
-		free(str);
-		Log::Warning( "Couldn't allocate memory for screenshot name: ", errno, " - ", strerror(errno));
-		return std::string(); 
-	}
-
-	slot_number = slot_number < 99 ? slot_number + 1 : 0;
-	std::string dst(str, len);
-
-	free(str);
-	return dst;
-}
-
-std::string CreateScreenshotsDir(const std::string& file)
-{
-	std::string dst_dir  = dir_name<std::string>(file);
-	std::string dst_file = base_name<std::string>(file);
-	std::string cwd = get_current_dir_name();
-
-	if(dst_dir.empty())
-		dst_dir = file[0] == '/' ? "/" : std::string(get_current_dir_name()) + "/" + SAVES_DIR;
-
-	if((!exists( dst_dir ) && !create_directories<std::string>( dst_dir )) || !real_path( dst_dir ))
-	{
-		Log::Warning("Couldn't create screenshot directory: ", dst_dir, " - ", strerror(errno));
-		dst_dir.clear();
-	}
-
-	return dst_dir;
+	static char tmp[12] = "save_";
+	std::snprintf( tmp, 12, "save_%02hhu.pcs", slot_number );
+	return std::filesystem::absolute(SAVES_DIR / tmp);
 }
 
 void CreateSlotSavesDir()
 {
-	std::string dir(SAVES_DIR);
-	if(!create_directories<std::string>( dir ))
+	if(!std::filesystem::exists(SAVES_DIR) && !std::filesystem::create_directories( SAVES_DIR ))
 		Log::Warning("Couldn't create saves directory: ", strerror(errno));
 }
 

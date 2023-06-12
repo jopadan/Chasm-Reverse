@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstring>
-
+#include <filesystem>
+#include <string_view>
 #include <panzer_ogl_lib.hpp>
 
 #include "assert.hpp"
@@ -813,16 +814,22 @@ void SystemWindow::UpdateBrightness()
 	}
 }
 
-bool SystemWindow::ScreenShot( const std::string& file ) const
+bool SystemWindow::ScreenShot( const std::filesystem::path& file ) const
 {
-	static uint8_t number = 0;
+	static uint8_t slot_number = 0;
+	static char slot_number_str[3] = "";
 	int result = -1;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
 	std::array<Uint32, 4> mask = { 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff };
 #else
 	std::array<Uint32, 4> mask = { 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000 };
 #endif
-	std::string dst_path = GetScreenshotFileNameForDir(CreateScreenshotsDir(file));
+	std::filesystem::path dst = std::filesystem::absolute( file.has_root_path() ? file : SAVES_DIR / file );
+	std::filesystem::create_directories(dst.parent_path());
+	dst.replace_extension("tga");
+	snprintf(slot_number_str, 3, "%.02hhu", slot_number);
+	dst = ((dst.parent_path() / dst.stem()).concat<std::string_view>(slot_number_str)).concat<std::string>(dst.extension().native());
+	slot_number = slot_number < 99 ? slot_number + 1 : 0;
 
 	/* get screen surface from window */
 	SDL_Surface* screen = SDL_GetWindowSurface(window_);
@@ -869,10 +876,10 @@ bool SystemWindow::ScreenShot( const std::string& file ) const
 			for (auto & p : pixels)
 				p = { (uint8_t)(r[p[0]] >> 8), (uint8_t)(g[p[1]] >> 8), (uint8_t)(b[p[2]] >> 8), p[3] };
 
-			ChasmReverse::WriteTGA(screen->w, screen->h, &pixels.front().front(), nullptr, dst_path.c_str());
-			if(!exists(dst_path))
+			ChasmReverse::WriteTGA(screen->w, screen->h, &pixels.front().front(), nullptr, dst.c_str());
+			if(!exists(dst))
 			{
-				Log::Warning("Couldn't write screenshot: ", dst_path, " - ", strerror(errno));
+				Log::Warning("Couldn't write screenshot: ", dst, " - ", strerror(errno));
 				result = -1;
 			}
 			pixels.clear();

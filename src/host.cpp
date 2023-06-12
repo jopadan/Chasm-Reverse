@@ -1,5 +1,3 @@
-#include <cstring>
-
 #include <framebuffer.hpp>
 #include <glsl_program.hpp>
 #include <ogl_state_manager.hpp>
@@ -402,28 +400,20 @@ void Host::GetSavesNames( SavesNames& out_saves_names )
 	{
 		SaveComment& out_save_comment= out_saves_names[slot];
 
-		char file_name[32];
-		GetSaveFileNameForSlot( slot, file_name, sizeof(file_name) );
-
-		if( LoadSaveComment( file_name, out_save_comment ) )
-		{ /* all ok */ }
-		else
+		std::filesystem::path file_name = GetSaveFileNameForSlot( slot );
+		if( !LoadSaveComment( file_name, out_save_comment ) )
 			out_save_comment[0]= '\0';
 	}
 }
 
-void Host::SaveGame( const unsigned int slot_number )
+void Host::SaveGame( const uint8_t slot_number )
 {
-	char file_name[64];
-	GetSaveFileNameForSlot( slot_number, file_name, sizeof(file_name) );
-	DoSave( file_name );
+	DoSave( GetSaveFileNameForSlot( slot_number ) );
 }
 
-void Host::LoadGame( const unsigned int slot_number )
+void Host::LoadGame( const uint8_t slot_number )
 {
-	char file_name[64];
-	GetSaveFileNameForSlot( slot_number, file_name, sizeof(file_name) );
-	DoLoad( file_name );
+	DoLoad( GetSaveFileNameForSlot( slot_number ) );
 }
 
 void Host::VidRestart()
@@ -610,7 +600,7 @@ void Host::DoRunLevel( const unsigned int map_number, const DifficultyType diffi
 	is_single_player_= true;
 }
 
-void Host::DoSave( const char* const save_file_name )
+void Host::DoSave( const std::filesystem::path& save_file_name )
 {
 	if( !( local_server_ != nullptr && client_ != nullptr && is_single_player_ ) )
 	{
@@ -632,7 +622,7 @@ void Host::DoSave( const char* const save_file_name )
 		Log::User( "Game save failed." );
 }
 
-void Host::DoLoad( const char* const save_file_name )
+void Host::DoLoad( const std::filesystem::path& save_file_name )
 {
 	SaveLoadBuffer save_buffer;
 	unsigned int save_buffer_pos= 0u;
