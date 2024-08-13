@@ -20,16 +20,21 @@ https://en.wikipedia.org/wiki/Chasm:_The_Rift.
 
 ### Building
 
-Install/extract the GOG version and mount the bin/cue image at
+Install/extract the GOG version to
 
-`GOG\ Games\Chasm\ The\ Rift/Chasm\ The\ Rift\ Original/CHASMPR.CUE`
+`GOG_INSTALL_PATH=C:\GOG\ Games\Chasm\ The\ Rift/`
 
- in cdemu or dosbox and install running `dossetup.exe` to `DOS_INSTALL_PATH=C:\CHASM`.
+mount the bin/cue image at
+
+`$GOG_INSTALL_PATH/Chasm\ The\ Rift\ Original/CHASMPR.CUE`
+
+in cdemu or dosbox and install running `dossetup.exe` to `DOS_INSTALL_PATH=C:\CHASM`.
 
 ```sh
 git clone --recurse-submodules --recursive http://github.com/Panzerschrek/Chasm-Reverse
 cd Chasm-Reverse
 cp -ar $DOS_INSTALL_PATH/CSM.BIN .
+cp -ar $GOG_INSTALL_PATH/csm.bin csm.tar
 cmake .
 ```
 ### Installation
@@ -52,15 +57,20 @@ the command option `--csm` strings, for example:
 
 `./PanzerChasm --csm CSM_RUS.BIN`
 
-To run the add-on, you must additionally specify the path to it through the 
-parameter command line `--addon`, for example:
-
-`./PanzerChasm --addon ADDON1`
-
 In order to execute some console command at start, use `--exec` option, for example:
 
  `./PanzerChasm --exec "load saves/save_00.pcs"` to start game and immediately load first saved game.
 
+#### Available add-ons:
+
+* Chasm - The Shadow Zone: ADDON1
+* Chasm - Cursed Land    : cursed
+* Chasm - Grim Borough   : borough
+
+To run the add-on, you must additionally specify the path to it through the 
+parameter command line `--addon` or `-addon`, for example:
+
+`./PanzerChasm --addon ADDON1`
 
 #### Control
 
